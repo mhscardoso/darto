@@ -145,24 +145,15 @@ List<int>? readUserInput() {
 
 
 int checkEntry(String entry) {
-  RegExp isAlpha  = RegExp(r'([a-zA-Z&@!#%$*()])');   // Has Letter
-  RegExp hasDot   = RegExp(r'([0-9]*\.)');            // Is Double
-  RegExp hasComma = RegExp(r'(\w+,\w)+');             // Has Comma (double number)
-
-  if (
-    isAlpha.hasMatch(entry)  ||
-    hasDot.hasMatch(entry)   ||
-    hasComma.hasMatch(entry)
-  ) {
+  RegExp isAlpha = RegExp(r'([a-zA-Z&@!#%$*(),\.])');
+  
+  if (isAlpha.hasMatch(entry)) {
     defaultError();
     return -1;
   }
   
   int? number = int.tryParse(entry ?? '');
-  if (
-    number == null ||
-    number <= 0
-  ) {
+  if ((number == null) || (number <= 0)) {
     defaultError();
     return -1;
   }
