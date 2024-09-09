@@ -5,15 +5,51 @@ class NumDiv {
   int? number;
   List<int>? divisors;
   int sum;
+  int perfectNumbersCount;
 
-  NumDiv(this.number, this.divisors, this.sum) {}
+  NumDiv(
+    this.number,
+    this.divisors,
+    this.sum,
+    this.perfectNumbersCount,
+  ) {}
 
-  NumDiv.start() : this(null, null, 0);
+  NumDiv.start() : this(null, null, 0, 0);
 
   void display() {
     print('Maior número abundante: ${this.number}');
     print('Fatores: ${this.divisors}');
     print('Soma dos fatores: ${this.sum}');
+  }
+
+  void updateAbundantInfo(int number, List<int> divisors, int sum) {
+    this.number   = number;
+    this.divisors = divisors;
+    this.sum      = sum;
+  }
+
+  void updatePerfectInfo(int number, List<int> divisors) {
+    this.perfectNumbersCount++;
+    print('${number} é um número perfeito.');
+    print('Fatores: ${divisors}');
+  }
+
+  void Function(int) checkNumber() {
+    return (int number) {
+      List<int>? divisors = getAllDivisors(number);
+      if (divisors == null) {
+        return;
+      }
+
+      int sum = divisors.reduce((int a, int b) => a + b);
+
+      if (sum == number) {
+        this.updatePerfectInfo(number, divisors);
+      }
+      else if ((sum > number) && (sum > this.sum)) {
+        this.updateAbundantInfo(number, divisors, sum);
+      }
+    };
   }
 }
 
@@ -38,12 +74,9 @@ void main() {
 
 NumDiv? make(List<int> range) {
   NumDiv register = NumDiv.start();
+  range.forEach(register.checkNumber());
 
-  List<int> perfectNumbers = <int>[];
-  
-  range.forEach(checkNumber(register, perfectNumbers));
-
-  if (perfectNumbers.length == 0) {
+  if (register.perfectNumbersCount == 0) {
     print('Nenhum número perfeito encontrado na faixa entre ${range[0]} e ${range[range.length - 1]}.');
   }
 
@@ -61,38 +94,13 @@ List<int>? getAllDivisors(int number) {
   }
 
   List<int> divisors = <int>[1];
-  for (int i = 2; i < number; i++) {
+  for (int i = 2; i <= number / 2; i++) {
     if (number % i == 0) {
       divisors.add(i);
     }
   }
 
   return divisors;
-}
-
-void Function(int) checkNumber(NumDiv register, List<int> perfects) {
-  return (int number) {
-    List<int>? divisors = getAllDivisors(number);
-    if (divisors == null) {
-      return;
-    }
-
-    int sum = divisors.reduce((int a, int b) => a + b);
-
-    if (sum == number) {
-      // Perfect Case
-      print('${number} é um número perfeito.');
-      print('Fatores: ${divisors}');
-
-      perfects.add(number);
-    }
-    else if ((sum > number) && (sum > register.sum)) {
-      // Abundant Case
-      register.number = number;
-      register.sum = sum;
-      register.divisors = divisors;
-    }
-  };
 }
 
 List<int>? generateRangeList(int start, int end) {
@@ -123,8 +131,8 @@ List<int>? readUserInput() {
 
   List<int> inputs = <int>[];
 
-  for (int i = 0; i < 2; i++) {
-    int input = checkEntry(tokens[i]);
+  for (final token in tokens) {
+    int input = checkEntry(token);
     if (input == -1) {
       return null;
     }
@@ -141,28 +149,20 @@ int checkEntry(String entry) {
   RegExp hasDot   = RegExp(r'([0-9]*\.)');            // Is Double
   RegExp hasComma = RegExp(r'(\w+,\w)+');             // Has Comma (double number)
 
-  if (isAlpha.hasMatch(entry)) {
-    defaultError();
-    return -1;
-  }
-
-  if (hasDot.hasMatch(entry)) {
-    defaultError();
-    return -1;
-  }
-
-  if (hasComma.hasMatch(entry)) {
+  if (
+    isAlpha.hasMatch(entry)  ||
+    hasDot.hasMatch(entry)   ||
+    hasComma.hasMatch(entry)
+  ) {
     defaultError();
     return -1;
   }
   
   int? number = int.tryParse(entry ?? '');
-  if (number == null) {
-    defaultError();
-    return -1;
-  }
-  
-  if (number <= 0) {
+  if (
+    number == null ||
+    number <= 0
+  ) {
     defaultError();
     return -1;
   }
